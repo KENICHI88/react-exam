@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Banner from './components/Banner';
 import Footer from './components/Footer';
 import MainContainer from './container/MainContainer';
-import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 ////
 import * as Constants from './Constants';
 import axios from 'axios';
@@ -29,6 +29,10 @@ class App extends Component {
     this.getArticles = this.getArticles.bind();
     this.handleSearch = this.handleSearch.bind();
     this.sendRequest = debounce(500, this.sendRequest);
+
+    this.scrollIntoView = this.scrollIntoView.bind();
+
+    this.refEle = React.createRef();
   }
 
   componentDidMount(){
@@ -54,9 +58,7 @@ class App extends Component {
     query.push('page='+(this.state.activePage));
     query.push('domains='+(Constants.domain));
     query.push(Constants.API_key);
-    // const url = Constants.API_host + 'everything?' + keySearch + 'pageSize='+pageSize + '&page='+(activePage+1) + '&domains=' + Constants.domain + '&' + Constants.API_key;
     const url = Constants.API_host + 'everything?' + query.join('&');
-    console.log(url);
     return  axios.get(url);
   }
 
@@ -67,6 +69,7 @@ class App extends Component {
       const articleList = this.getArticles();
       articleList.then(rs => {
         if(rs.data){
+          this.scrollIntoView();
           this.setState({
             loading: false,
             listArticle : rs.data.articles,
@@ -111,19 +114,36 @@ class App extends Component {
       this.sendRequest();
     })
   }
+  scrollIntoView = () => {
+    this.refEle.current.scrollIntoView({
+      behavior: 'smooth',
+      block : 'start'
+    })
+  }
   render(){
     return (
       <Router>
-        <Header readArticles={this.state.readArticles}/>
+        <Header />
         <Banner />
-
+        <div  ref={this.refEle} className="container">
+          <div className="row">
+            <div className="col-sm-2">
+              <label>Search here</label>
+            </div>
+            <div className="col-sm-10">
+                <Search 
+                handleSearch={this.handleSearch}
+                keyword={this.state.keyword}
+              />
+            </div>
+          </div>
+        </div>
         <div className="container">
           <div className="row">
-            <Switch>
-              <Route exact path="/" component={()=> (
-                <>
-                  <div className="col-8">
-                      {this.state.loading ? (<Loading />) : (
+            {this.state.loading ? (<div className="col-12"><Loading /></div>) : (
+              <Switch>
+                <Route exact path="/" component={()=> (
+                  <div className="col-12">
                       <MainContainer
                       listArticle={this.state.listArticle}
                       addToHistory={this.addToHistory}
@@ -133,28 +153,20 @@ class App extends Component {
                       itemPerPage={this.state.itemPerPage}
                       requestArticleByPage={this.requestArticleByPage}
                     />
-                    )}
                   </div>
-                  <div className="col-4">
-                    <h2>Search here</h2>
-                    <Search 
-                    handleSearch={this.handleSearch}
-                    keyword={this.state.keyword}
-                  />
-                  </div>
-                </>
-              )} />
-              <Route
-                path="/history"
-                component={()=> (
-
-                  <div className="col-8">
-                    <h2>History</h2>
-                    <History />
-                  </div>
-                )}
-              />
-            </Switch>
+                )} />
+                <Route
+                  path="/history"
+                  component={()=> (
+                    <div className="col-10">
+                      <h2>History</h2>
+                      <History />
+                    </div>
+                  )}
+                />
+              </Switch>
+            )}
+            
           </div>
         </div>
         <hr />
@@ -165,34 +177,3 @@ class App extends Component {
 }
 
 export default App;
-{/* <div>
-                <Header readArticles={this.state.readArticles}/>
-                <Banner />
-                <div className="container">
-                  <div className="row">
-                    <div className="col-8">
-                        {this.state.loading ? (<Loading />) : (
-                        <MainContainer
-                        listArticle={this.state.listArticle}
-                        addToHistory={this.addToHistory}
-                        readArticles={this.state.readArticles}
-                        totalPage={Math.ceil(this.state.total/this.state.itemPerPage)}
-                        activePage={this.state.activePage}
-                        itemPerPage={this.state.itemPerPage}
-                        requestArticleByPage={this.requestArticleByPage}
-                      />
-                      )}
-                    </div>
-                    <div className="col-4">
-                      <h2>Search here</h2>
-                      <Search 
-                      handleSearch={this.handleSearch}
-                      keyword={this.state.keyword}
-                    />
-                    </div>
-                  </div>
-                </div>
-                
-                <hr />
-                <Footer />
-              </div> */}
