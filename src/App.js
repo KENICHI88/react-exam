@@ -125,18 +125,11 @@ class App extends Component {
       <Router>
         <Header />
         <Banner />
-        <div  ref={this.refEle} className="container">
-          <div className="row">
-            <div className="col-sm-2">
-              <label>Search here</label>
-            </div>
-            <div className="col-sm-10">
-                <Search 
-                handleSearch={this.handleSearch}
-                keyword={this.state.keyword}
-              />
-            </div>
-          </div>
+        <div ref={this.refEle}>
+          <Search 
+            handleSearch={this.handleSearch}
+            keyword={this.state.keyword}
+          />
         </div>
         <div className="container">
           <div className="row">
